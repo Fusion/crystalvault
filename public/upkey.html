@@ -1,0 +1,76 @@
+<link rel="import" href="header.html">
+
+<div class="ui middle aligned center aligned">
+    <div class="area">
+    <div id="drop_zone">Drop your private key here</div>
+    </div>
+    <p>Your private key will be stored in your browser's private storage area.<br />
+    The following levels of paranoia will be applied to protect it:</p>
+    <ul>
+        <li> No data will leave your web browser</li>
+        <li> It will first be encrypted</li>
+        <li> Three different algorithms will be used: Salsa 20, AES and Twofish</li>
+        <li> Keys will be derived using scrypt (4000x more hardware effort than bcrypt)</li>
+        <li> Data integrity will be enforced using HMAC</li>
+    </ul>
+    <div id="diag"></div>
+</div>
+
+<script>
+  function handleFileSelect(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    var files = evt.dataTransfer.files; // FileList object.
+
+    // TODO wrong number of files
+    var reader = new FileReader();
+    reader.onload = function(e) {
+            $('#diag').html("Encrypting your key...");
+            triplesec.encrypt ({
+                data:          new triplesec.Buffer(reader.result),
+                key:           new triplesec.Buffer('top-secret-pw'),
+                progress_hook: function (obj) { /* ... */ }
+            }, function(err, buff) {
+                if (! err) {
+                    var ciphertext = buff.toString('hex');
+                    $('#diag').html($('#diag').html() + "Done.<br />Saving your key...");
+                    localStorage.setItem("vaultsecretkey", ciphertext);
+                    $('#diag').html($('#diag').html() + "Done.<br />Key saved. You're all set.");
+                }
+            });
+    }
+    reader.readAsBinaryString(files[0]);
+
+
+    //var output = [];
+    //for (var i = 0, f; f = files[i]; i++) {
+     // output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+      //            f.size, ' bytes, last modified: ',
+       //           f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+        //          '</li>');
+    //}
+    //document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+  }
+
+  function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+  }
+
+
+  $(function() {
+    // Setup the dnd listeners.
+    var dropZone = document.getElementById('drop_zone');
+    dropZone.addEventListener('dragover', handleDragOver, false);
+    dropZone.addEventListener('drop', handleFileSelect, false);
+
+    if(localStorage.getItem("vaultpassphrase") == null) {
+        alert("You need to enter your passphrase first.");
+        window.location.replace("enterpassphrase.html");
+    }
+  });
+</script>
+
+</body>

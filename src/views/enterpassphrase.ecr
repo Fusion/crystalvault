@@ -1,0 +1,36 @@
+<div class="ui middle aligned center aligned">
+    <div class="ui input">
+    Email <input type="email" id="email" />
+    </div>
+    <div class="ui input">
+    Passphrase <input type="password" id="passphrase" />
+    </div>
+    <div class="ui input">
+    <button class="ui button" id="submitter">Remember</button>
+    </div>
+    <p>Enter your passphrase. It will be stored locally in your browser for 15 minutes.</p>
+    <p>It will never be sent to the server.</p>
+    <div id="diag"></div>
+</div>
+
+<script>
+$(function() {
+  $('#submitter').click(function(e) {
+    var identity = $('#email').val();
+    if(identity.length == 0) {
+      alert("Please enter your email address");
+    }
+    else {
+      var passphrase = $('#passphrase').val();
+      if(passphrase.length == 0) {
+        alert("Please enter a passphrase");
+      }
+      else {
+        var data = {identity: identity, passphrase: passphrase, ts: new Date().getTime() + (15 * 60 * 1000)}
+        localStorage.setItem("vaultpassphrase", JSON.stringify(data));
+        alert("Passphrase remembered for the next 15 minutes.");
+      }
+    }
+  });
+});
+</script>

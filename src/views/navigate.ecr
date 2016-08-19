@@ -1,0 +1,18 @@
+<div>
+<%= location %>
+<% files.each do |file| %>
+<p class='file'><%= file %> - <a href='/viewfile/<%= whoami %>/<%= file %>'>view</a></p>
+<% end %>
+</div>
+<button class='ui button' id='newsecret'>New Secret</button>
+<script>
+$(function() {
+  $('#newsecret').click(function(e) {
+    window.location.replace("/newsecret");
+  });
+
+  $('.file').each(function(i, f) {
+    console.log($(this).html());
+  });
+});
+</script>

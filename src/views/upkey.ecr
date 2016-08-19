@@ -1,0 +1,79 @@
+<div class="ui middle aligned center aligned">
+    <div class="area">
+    <div id="drop_zone">Drop your private key here</div>
+    </div>
+    <p>Your private key will be stored in your browser's private storage area.<br />
+    The following levels of paranoia will be applied to protect it:</p>
+    <ul>
+        <li> No data will leave your web browser</li>
+        <li> It will first be encrypted</li>
+        <li> Three different algorithms will be used: Salsa 20, AES and Twofish</li>
+        <li> Keys will be derived using scrypt (4000x more hardware effort than bcrypt)</li>
+        <li> Data integrity will be enforced using HMAC</li>
+    </ul>
+    <div id="diag"></div>
+</div>
+
+<script>
+  function handleFileSelect(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    var files = evt.dataTransfer.files; // FileList object.
+
+    // TODO wrong number of files?
+    var reader = new FileReader();
+    reader.onload = function(e) {
+            if(files.length != 1) {
+                alert("Sorry, you cannot upload more than one key.");
+            }
+            else {
+              expire_passphrase();
+              passphrase_struct = get_passphrase_struct();
+              if(passphrase_struct == null) {
+                alert("Sorry, your passphrase expired.");
+              }
+              else {
+                $('#diag').html("Encrypting your key...");
+                triplesec.encrypt ({
+                    data:          new triplesec.Buffer(reader.result),
+                    key:           new triplesec.Buffer(passphrase_struct.passphrase),
+                    progress_hook: function (obj) { /* ... */ }
+                }, function(err, buff) {
+                    if (! err) {
+                        var ciphertext = buff.toString('hex');
+                        console.log(ciphertext);
+                        $('#diag').html($('#diag').html() + "Done.<br />Saving your key...");
+                        localStorage.setItem("vaultsecretkey", ciphertext);
+                        $('#diag').html($('#diag').html() + "Done.<br />Key saved. You're all set.<br /><button class='ui button' id='showme'>Show me what you saved</button>");
+                        $('#showme').click(function(e) {
+                          alert(ciphertext);
+                        });
+                    }
+                });
+              }
+            }
+    }
+    reader.readAsBinaryString(files[0]);
+  }
+
+  function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy';
+  }
+
+
+  $(function() {
+    if(get_passphrase_struct() == null) {
+        alert("You need to enter your passphrase first.");
+        window.location.replace("enterpassphrase");
+    }
+    else {
+      // Setup the dnd listeners.
+      var dropZone = document.getElementById('drop_zone');
+      dropZone.addEventListener('dragover', handleDragOver, false);
+      dropZone.addEventListener('drop', handleFileSelect, false);
+    }
+  });
+</script>
