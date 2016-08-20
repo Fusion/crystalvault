@@ -39,6 +39,27 @@ function display_diag(txt, lf) {
   $('#diag').html($('#diag').html() + ftxt);
 }
 
-function display_flash(txt) {
-  $('#flash').html('<div class="ui raised segment">' + txt + "</div>");
+function display_flash(txt, type) {
+  var html;
+  if (type == "positive")
+    html = '<div class="ui positive message">' + txt + "</div>";
+
+  $('#flash').html(html);
+
+  setTimeout(function() {
+    $('#flash').html('');
+  }, 5000);
+}
+
+function display_more(header, content_id) {
+  $.ajax({
+    type: "GET",
+    url: "/content/" + content_id + ".txt",
+    data: {},
+    success: function( content ) {
+      $('.long.modal .moreheader').text(header);
+      $('.long.modal .description').html(content);
+      $('.long.modal').modal('show');
+    }
+  });
 }
