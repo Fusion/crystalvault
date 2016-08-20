@@ -17,7 +17,7 @@
     </div>
     <p>Enter your passphrase. It will be stored locally in your browser for 15 minutes.</p>
     <p>It will never be sent to the server.</p>
-    <div id="diag"></div>
+    <div id="flash"></div>
   </form>
 </div>
 
@@ -58,8 +58,7 @@ $(function() {
         localStorage.setItem("vaultpassphrase", JSON.stringify(data));
         $('#email').val('');
         $('#passphrase').val('');
-        reset_diag();
-        display_diag("Passphrase remembered for the next 15 minutes.");
+        display_flash("Passphrase remembered for the next 15 minutes.");
       }
     }
   });

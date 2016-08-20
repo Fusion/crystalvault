@@ -14,7 +14,7 @@ function expire_passphrase() {
   }
 
   // Patch navigation menu
-  $('#navigate_menu').html('<a href="/navigate/' + whoami + '" class="item">Navigate</a>');
+  $('#navigate_menu').html('<a href="/navigate/' + whoami + '" class="item"><i class="folder open icon"></i></a>');
 }
 
 function init_all() {
@@ -37,4 +37,8 @@ function display_diag(txt, lf) {
   if(lf) ftxt = txt + "<br />"
   else   ftxt = txt;
   $('#diag').html($('#diag').html() + ftxt);
+}
+
+function display_flash(txt) {
+  $('#flash').html('<div class="ui raised segment">' + txt + "</div>");
 }
