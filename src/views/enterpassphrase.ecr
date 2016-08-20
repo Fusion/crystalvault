@@ -1,21 +1,49 @@
 <div class="ui middle aligned center aligned">
-    <div class="ui input">
-    Email <input type="email" id="email" />
+  <form id="ppform" class="ui fluid form">
+    <div class="inline field">
+    <input type="email" id="email" placeholder="Email" />
+    <div class="ui left pointing label">
+    This is how the server finds your public key.
     </div>
-    <div class="ui input">
-    Passphrase <input type="password" id="passphrase" />
     </div>
-    <div class="ui input">
-    <button class="ui button" id="submitter">Remember</button>
+    <div class="inline field">
+    <input type="text" id="passphrase" placeholder="Passphrase" />
+    <div class="ui left pointing label">
+    Your PGP passphrase. Be sure to enter it carefully.
+    </div>
+    </div>
+    <div class="field">
+    <button class="ui button" id="submitter">Remember</button> <span id="reveal" class="discreet-action"></span>
     </div>
     <p>Enter your passphrase. It will be stored locally in your browser for 15 minutes.</p>
     <p>It will never be sent to the server.</p>
     <div id="diag"></div>
+  </form>
 </div>
 
 <script>
 $(function() {
-  $('#submitter').click(function(e) {
+  function reveal_passphrase() {
+    var curtype = $('#passphrase').attr('type');
+    if(curtype == "password") {
+      var newtype = "text";
+      var newaction = "hide passphrase";
+    }
+    else {
+      var newtype = "password";
+      var newaction = "reveal passphrase";
+    }
+    $('#passphrase').attr('type', newtype);
+    $('#reveal').text(newaction);
+  }
+
+  $('#reveal').click(function(e) {
+    reveal_passphrase();
+  });
+
+  $('#ppform').submit(function(e) {
+    e.preventDefault();
+
     var identity = $('#email').val();
     if(identity.length == 0) {
       alert("Please enter your email address");
@@ -28,9 +56,15 @@ $(function() {
       else {
         var data = {identity: identity, passphrase: passphrase, ts: new Date().getTime() + (15 * 60 * 1000)}
         localStorage.setItem("vaultpassphrase", JSON.stringify(data));
-        alert("Passphrase remembered for the next 15 minutes.");
+        $('#email').val('');
+        $('#passphrase').val('');
+        reset_diag();
+        display_diag("Passphrase remembered for the next 15 minutes.");
       }
     }
   });
+
+  reveal_passphrase();
+
 });
 </script>

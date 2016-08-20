@@ -10,6 +10,11 @@ body {
   color: red;
 }
 
+.discreet-action {
+  font-style: italic;
+  cursor: pointer;
+}
+
 .main.container {
   margin-top: 2em;
 }
