@@ -42,7 +42,6 @@
                 }, function(err, buff) {
                     if (! err) {
                         var ciphertext = buff.toString('hex');
-                        console.log(ciphertext);
                         $('#diag').html($('#diag').html() + "Done.<br />Saving your key...");
                         localStorage.setItem("vaultsecretkey", ciphertext);
                         $('#diag').html($('#diag').html() + "Done.<br />Key saved. You're all set.<br /><button class='ui button' id='showme'>Show me what you saved</button>");

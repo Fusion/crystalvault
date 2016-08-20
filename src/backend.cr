@@ -102,4 +102,10 @@ post "/pullfile.json" do |env|
   pullfile body_param("recipient"), body_param("name")
 end
 
+get "/tests" do |env|
+  prepare
+  keys = listkeys
+  render "src/views/tests.ecr", "src/views/layout.ecr"
+end
+
 Kemal.run
