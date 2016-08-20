@@ -34,7 +34,7 @@
                 alert("Sorry, your passphrase expired.");
               }
               else {
-                $('#diag').html("Encrypting your key...");
+                display_diag("Encrypting your key...", false);
                 triplesec.encrypt ({
                     data:          new triplesec.Buffer(reader.result),
                     key:           new triplesec.Buffer(passphrase_struct.passphrase),
@@ -42,9 +42,9 @@
                 }, function(err, buff) {
                     if (! err) {
                         var ciphertext = buff.toString('hex');
-                        $('#diag').html($('#diag').html() + "Done.<br />Saving your key...");
+                        display_diag("done.<br />Saving your key...", false);
                         localStorage.setItem("vaultsecretkey", ciphertext);
-                        $('#diag').html($('#diag').html() + "Done.<br />Key saved. You're all set.<br /><button class='ui button' id='showme'>Show me what you saved</button>");
+                        display_diag("done.<br />Key saved. You're all set.<br /><button class='ui button' id='showme'>Show me what you saved</button>");
                         $('#showme').click(function(e) {
                           alert(ciphertext);
                         });

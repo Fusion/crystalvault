@@ -27,3 +27,10 @@ function get_passphrase_struct() {
     return null;
   return JSON.parse(passphrase_raw);
 }
+
+function display_diag(txt, lf) {
+  var ftxt;
+  if(lf) ftxt = txt + "<br />"
+  else   ftxt = txt;
+  $('#diag').html($('#diag').html() + ftxt);
+}
