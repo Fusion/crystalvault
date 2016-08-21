@@ -1,12 +1,15 @@
-# backend
+# transparentvault
 
-TODO: Write a description here
+See file: public/design_content.txt
 
 ## Installation
 
-
-TODO: Write installation instructions here
-
+* Create directory structure: data/auth, data/keys/, data/data
+* Run server -- proxy or run directly https
+* Create new users at https://your_server/newuser.json
+* Additionally, upload these users' public keys to data/keys
+* Make sure data/data is writable by the web server
+* Ready
 
 ## Usage
 

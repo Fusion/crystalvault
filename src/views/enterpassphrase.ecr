@@ -7,6 +7,12 @@
     </div>
     </div>
     <div class="inline field">
+    <input type="password" id="password" placeholder="Password" />
+    <div class="ui left pointing label">
+    So the server knows if you who you say you are.
+    </div>
+    </div>
+    <div class="inline field">
     <input type="text" id="passphrase" placeholder="Passphrase" />
     <div class="ui left pointing label">
     Your PGP passphrase. Be sure to enter it carefully.
@@ -19,7 +25,15 @@
     <p>It will never be sent to the server.</p>
     <div id="flash"></div>
   </form>
+  <div class="ui divider"></div>
+  <form id="ppdform" class="ui fluid form">
+    <div class="field">
+    <button class="ui button" id="forgetter">Forget now</button> <span id="reveal" class="discreet-action"></span>
+    </div>
+    <p>Immediately forget passphrase and delete server-side session</p>
+  </form>
 </div>
+
 
 <script>
 $(function() {
@@ -41,12 +55,32 @@ $(function() {
     reveal_passphrase();
   });
 
+  $('#ppdform').submit(function(e) {
+    e.preventDefault();
+
+    localStorage.removeItem("vaultpassphrase");
+
+    $.ajax({
+      type: "POST",
+      url: "/forget.json",
+      data: {},
+      success: function(diag) {
+        refresh_passphrase_status();
+        display_flash("Forgotten.", "positive");
+      }
+    });
+  });
+
   $('#ppform').submit(function(e) {
     e.preventDefault();
 
     var identity = $('#email').val();
+    var password = $('#password').val();
     if(identity.length == 0) {
       alert("Please enter your email address");
+    }
+    if(password.length == 0) {
+      alert("Please enter your password");
     }
     else {
       var passphrase = $('#passphrase').val();
@@ -54,11 +88,31 @@ $(function() {
         alert("Please enter a passphrase");
       }
       else {
-        var data = {identity: identity, passphrase: passphrase, ts: new Date().getTime() + (15 * 60 * 1000)}
-        localStorage.setItem("vaultpassphrase", JSON.stringify(data));
-        $('#email').val('');
-        $('#passphrase').val('');
-        display_flash("Passphrase remembered for the next 15 minutes.", "positive");
+
+        display_loader("Attempting log in");
+
+        $.ajax({
+          type: "POST",
+          url: "/auth.json",
+          data: { identity: identity, password: password },
+          success: function(diag) {
+            hide_loader();
+
+            if(diag.diag) {
+              var data = {identity: identity, passphrase: passphrase, ts: new Date().getTime() + (15 * 60 * 1000)}
+              localStorage.setItem("vaultpassphrase", JSON.stringify(data));
+              $('#email').val('');
+              $('#passphrase').val('');
+              refresh_passphrase_status();
+              display_flash("Passphrase remembered for the next 15 minutes.", "positive");
+            }
+            else {
+              localStorage.removeItem("vaultpassphrase");
+              display_flash("Unable to log you in.", "error");
+            }
+          }
+        });
+
       }
     }
   });

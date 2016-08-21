@@ -15,8 +15,7 @@
 <script>
 $(function() {
   init_all();
-  var remembered = (get_passphrase_struct() == null)  ? "Passphrase: <span class='ko'>Unknown<span>" : "Passphrase: <span class='ok'>Remembered</span>";
-  $('#ppstatus').html("<a href='/enterpassphrase'>" + remembered + "</a>");
+  refresh_passphrase_status();
 });
 </script>
 </head>
@@ -54,6 +53,12 @@ $(function() {
       <div class="ui primary approve button">
         Close
       </div>
+    </div>
+  </div>
+
+  <div class="ui page dimmer">
+    <div class="content">
+      <div class="center txt"></div>
     </div>
   </div>
 

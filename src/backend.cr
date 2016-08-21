@@ -1,3 +1,4 @@
+require "crypto/bcrypt/password"
 require "kemal"
 require "./config.cr"
 
@@ -11,7 +12,15 @@ macro reply_json(data, diag = 200)
   {{data}}.to_json
 end
 
-macro prepare
+def prepare(env)
+  if env.session["identity"]?.is_a?(Nil)
+    return false
+  end
+  true
+end
+
+def enterpassphrase
+  render "src/views/enterpassphrase.ecr", "src/views/layout.ecr"
 end
 
 def navigate(location, whoami)
@@ -31,6 +40,33 @@ end
 
 def listkeys
   (Dir.entries CONFIG["keys_root"]).select { |entry| entry != "." && entry != ".." }
+end
+
+# bcrypt creates its own salts
+private def encryptpwd(password)
+  Crypto::Bcrypt::Password.create password, cost: 10
+end
+
+def newuser(identity, password)
+  hashed = encryptpwd password
+  "Create this file:<br />\n<pre>\necho '#{hashed}' > #{CONFIG["auth_root"]}/#{identity}\n</pre>"
+end
+
+def auth(env, identity, password)
+  hashed = (File.read CONFIG["auth_root"] + "/" + identity).strip
+  stored = Crypto::Bcrypt::Password.new hashed
+  if stored == password
+    env.session["identity"] = identity
+    reply_json({diag: true})
+  else
+    env.session.delete "identity"
+    reply_json({diag: false})
+  end
+end
+
+def forget(env)
+  env.session.delete "identity"
+  reply_json({diag: true})
 end
 
 def getkey(identity)
@@ -55,57 +91,86 @@ def pullfile(recipient, name)
 end
 
 get "/" do |env|
-  prepare
   render "src/views/index.ecr", "src/views/layout.ecr"
 end
 
 get "/upkey" do |env|
-  prepare
-  render "src/views/upkey.ecr", "src/views/layout.ecr"
+  if prepare(env)
+    render "src/views/upkey.ecr", "src/views/layout.ecr"
+  else
+    enterpassphrase
+  end
 end
 
 get "/enterpassphrase" do |env|
-  prepare
-  render "src/views/enterpassphrase.ecr", "src/views/layout.ecr"
+  enterpassphrase
 end
 
 get "/navigate/:whoami" do |env|
-  prepare
-  navigate "/", env.params.url["whoami"]
+  if prepare(env)
+    navigate "/", env.params.url["whoami"]
+  else
+    enterpassphrase
+  end
 end
 
 get "/navigate/:whoami/:location" do |env|
-  prepare
-  navigate env.params.url["location"], env.params.url["whoami"]
+  if prepare(env)
+    navigate env.params.url["location"], env.params.url["whoami"]
+  else
+    enterpassphrase
+  end
 end
 
 get "/newsecret" do |env|
-  prepare
-  keys = listkeys
-  render "src/views/newsecret.ecr", "src/views/layout.ecr"
+  if prepare(env)
+    keys = listkeys
+    render "src/views/newsecret.ecr", "src/views/layout.ecr"
+  else
+    enterpassphrase
+  end
 end
 
 get "/viewfile/:whoami/:file" do |env|
-  prepare
-  viewfile env.params.url["file"], env.params.url["whoami"]
+  if prepare(env)
+    viewfile env.params.url["file"], env.params.url["whoami"]
+  else
+    enterpassphrase
+  end
+end
+
+get "/newuser.json" do |env|
+  "<pre>Syntax: /newuser.json/identity/password -- this will display how to create this user's auth file.</pre>"
+end
+
+get "/newuser.json/:identity/:password" do |env|
+  newuser env.params.url["identity"], env.params.url["password"]
+end
+
+post "/auth.json" do |env|
+  auth env, body_param("identity"), body_param("password")
+end
+
+post "/forget.json" do |env|
+  forget env
 end
 
 post "/getkey.json" do |env|
-  getkey body_param("id")
+  if prepare(env)
+    getkey body_param("id")
+  end
 end
 
 post "/pushfile.json" do |env|
-  pushfile body_param("recipient"), body_param("name"), body_param("content")
+  if prepare(env)
+    pushfile body_param("recipient"), body_param("name"), body_param("content")
+  end
 end
 
 post "/pullfile.json" do |env|
-  pullfile body_param("recipient"), body_param("name")
-end
-
-get "/tests" do |env|
-  prepare
-  keys = listkeys
-  render "src/views/tests.ecr", "src/views/layout.ecr"
+  if prepare(env)
+    pullfile body_param("recipient"), body_param("name")
+  end
 end
 
 Kemal.run

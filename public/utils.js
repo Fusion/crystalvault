@@ -28,6 +28,11 @@ function get_passphrase_struct() {
   return JSON.parse(passphrase_raw);
 }
 
+function refresh_passphrase_status() {
+  var remembered = (get_passphrase_struct() == null)  ? "Passphrase: <span class='ko'>Unknown<span>" : "Passphrase: <span class='ok'>Remembered</span>";
+  $('#ppstatus').html("<a href='/enterpassphrase'>" + remembered + "</a>");
+}
+
 function reset_diag() {
   $('#diag').html('');
 }
@@ -43,6 +48,8 @@ function display_flash(txt, type) {
   var html;
   if (type == "positive")
     html = '<div class="ui positive message">' + txt + "</div>";
+  else if (type == "error")
+    html = '<div class="ui negative message">' + txt + "</div>";
 
   $('#flash').html(html);
 
@@ -62,4 +69,25 @@ function display_more(header, content_id) {
       $('.long.modal').modal('show');
     }
   });
+}
+
+function display_dimmer(content) {
+  $('.page.dimmer .content .txt').html(content);
+  $('.page.dimmer').modal('show');
+}
+
+function hide_dimmer() {
+  // TODO why is semantic ui detaching this guy? (Or so goes the claim in the console...)
+  $('.page.dimmer').modal('hide');
+}
+
+function display_loader(content) {
+  var full_content = '<div class="ui indeterminate text loader">'
+    + content
+    + '</div>';
+  display_dimmer(full_content);
+}
+
+function hide_loader(modal) {
+  hide_dimmer();
 }
