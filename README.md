@@ -4,7 +4,7 @@ See file: public/design_content.txt
 
 ## Installation
 
-* Create directory structure: data/auth, data/keys/, data/data
+* Create directory structure: data/auth, data/keys/, data/data, data/logs
 * Run server -- proxy or run directly https
 * Create new users at https://your_server/newuser.json
 * Additionally, upload these users' public keys to data/keys

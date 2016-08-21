@@ -9,7 +9,7 @@
     <div class="inline field">
     <input type="password" id="password" placeholder="Password" />
     <div class="ui left pointing label">
-    So the server knows if you who you say you are.
+    So the server knows if you are who you say you are.
     </div>
     </div>
     <div class="inline field">
@@ -18,10 +18,18 @@
     Your PGP passphrase. Be sure to enter it carefully.
     </div>
     </div>
+    <div class="inline field">
+      <div class="ui mini right labeled input">
+        <input type="text" id="howlong" value="15">
+        <div class="ui label">
+        minutes
+        </div>
+      </div>
+    </div>
     <div class="field">
     <button class="ui button" id="submitter">Remember</button> <span id="reveal" class="discreet-action"></span>
     </div>
-    <p>Enter your passphrase. It will be stored locally in your browser for 15 minutes.</p>
+    <p>Enter your passphrase. It will be stored locally in your browser for however long you specify (default: 15 min).</p>
     <p>It will never be sent to the server.</p>
     <div id="flash"></div>
   </form>
@@ -76,11 +84,15 @@ $(function() {
 
     var identity = $('#email').val();
     var password = $('#password').val();
+    var howlong  = parseInt($('#howlong').val());
     if(identity.length == 0) {
       alert("Please enter your email address");
     }
-    if(password.length == 0) {
+    else if(password.length == 0) {
       alert("Please enter your password");
+    }
+    else if(howlong < 1) {
+      alert("Please enter a valid duration");
     }
     else {
       var passphrase = $('#passphrase').val();
@@ -99,12 +111,12 @@ $(function() {
             hide_loader();
 
             if(diag.diag) {
-              var data = {identity: identity, passphrase: passphrase, ts: new Date().getTime() + (15 * 60 * 1000)}
+              var data = {identity: identity, passphrase: passphrase, ts: new Date().getTime() + (howlong * 60 * 1000)}
               localStorage.setItem("vaultpassphrase", JSON.stringify(data));
               $('#email').val('');
               $('#passphrase').val('');
               refresh_passphrase_status();
-              display_flash("Passphrase remembered for the next 15 minutes.", "positive");
+              display_flash("Passphrase remembered for the next " + howlong + " minutes.", "positive");
             }
             else {
               localStorage.removeItem("vaultpassphrase");
