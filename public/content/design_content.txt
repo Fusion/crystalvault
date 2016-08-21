@@ -1,0 +1,77 @@
+<div class="ui header">Goals</div>
+<p>This application was written to scratch an itch at my workplace:
+ we needed a means to securely store secrets, such as PGP keys, Amazon keys,
+ server passwords, etc.</p>
+<p>A few requirements are:</p>
+<ul>
+<li>Zero knowledge server, so that, should our secret server be exploited, no
+ important data would be leaked.</li>
+<li>Backups: we could not afford to lose all our secrets. What better way, then,
+ than to store them "in the open" say on a Dropbox partition?</li>
+<li>Easy to use, or there would be no tool adoption. It is a well know issue that
+ security and ease of use are old antagonists, so it is important to strike a
+ proper balance.</li>
+</ul>
+<p>These requirements have informed my design decisions for /transparentvault</p>
+
+<div class="ui header">Simplicity</div>
+<p>A traditional way to securely store data in a zero knowledge environment is to
+ first create a private-public key pair and use it to encrypt your document.
+ You then encrypt this key pair using each authorized reader's public key and publish
+ the whole thing: encrypted document + encrypted key pair + n * user_read_key.</p>
+<p>This is not compatible with some of my design goals:</p>
+<ul>
+<li>Explaining this scheme in itself confuses many otherwise smart people.</li>
+<li>(Related) This makes users dependent on this tool: it makes it difficult to retrieve
+ secrets directly from storage, for instance after server failure.</li>
+</ul>
+<p>Therefore, my approach has been to simply create an encrypted copy of the original
+ document for each person allowed to access it, using their public key.</p>
+<p>Users are encouraged to break secret storage down to a very granular level. As a result,
+ secret documents end up being fairly small. Therefore, following this encryption schema may
+ actually end up being more space efficient than the alternative.</p>
+<div class="ui header">Concerns</div>
+<p><strong>Unsafe storage?</strong></p>
+<p>I realize that many potential users will be put off by the claim that they
+ should use a cloud provider as their backend storage solution.</p>
+<p>Outside cryptography circles (and I definitely consider myself as a poorly trained outsider!),
+ it seems counter intuitive to store your data in the open. But what you are storing
+ is encrypted data. Think of your secret repository as a massive bank vault: does standing
+ in front of its locked door mean you can just walk in and steal its content?</p>
+<p>This vault's door is locked using PGP encryption. PGP has its share of pros and console
+ arguments. In the end, it boils down to how you use it and keeping in mind that it
+ does not offer forward secrecy. Be safe! Generate 4096 bit keys, do not email yourself
+ your private key, etc.</p>
+<p>Additionally, this application is fully open source, so you and any security
+ professional can freely audit it.
+ <a href='https://github.com/Fusion/transparentvault/issues'>Feel free to create issues!</a></p>
+<p><strong>How is "zero knowledge" possible?</strong></p>
+<p>All encryption and decryption operations are performed, in your web browser, using
+ <a href='https://github.com/keybase'>the Keybase.io folks' libraries.</a></p>
+<p>No private key or passphrase ever hits the server. All it "sees" is public keys and
+ already encrypted documents.</p>
+<p><strong>Client side security</strong></p>
+<p>You will find articles written by experts skeptical of cryptography performed in your web browser.
+ And they should be! However, note that their concerns are typically about things such as malicious
+ same origin JavaScript injection (we do not load remote js); MITM attackes (always use TLS!) or
+ poor entropy (this was resolved using better generators)</p>
+<p>Many attacks, such as HTTPS poisoning, will take advantage of an application's attack surface to find
+ new vectors. An obvious one would be corrupting the process when in-browser code asks PGP key servers for
+ a user's key. Through DNS poisoning, it would be possible to encrypt a document for the wrong recipient.
+ That is why you have to install each user's public key manually on the server, in a file named
+ after an email address provided by the user.</p>
+<p>Side channel attacks, such as timing attacks, are theoretically possible, the same way
+ it is theoretically possible to run them against a native PC application. They are also
+ very theoretical.</p>
+<p><strong>But you are storing my PGP passphrase! And my private key!</strong></p>
+<p>That is correct as it is necessary to decrypt files signed using your public key. With these caveats:</p>
+<ul>
+<li>Your passphrase is stored for 15 minutes. You can also manually ask the client to forget it immediately (recommended!)</li>
+<li>Before your private key finds its way in your browser's local storage, it is encrypted in an
+ extremely paranoid manner:</li>
+<li>You will only be able to retrieve it by providing your passphrase.</li>
+<li>It is encrypted using three different ciphers.</li>
+<li>A different key is first derived for each cipher. Two additional keys are created to sign the resulting ciphertext.</li>
+<li>Cipher block chaining is not used. Key stretching is.</li>
+<li>Still reading? OK: AFAIK, the resulting ciphertext is IND-CCA2 secure.</li>
+</ul>
