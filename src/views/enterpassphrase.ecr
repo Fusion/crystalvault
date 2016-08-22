@@ -115,6 +115,7 @@ $(function() {
               localStorage.setItem("vaultpassphrase", JSON.stringify(data));
               $('#email').val('');
               $('#passphrase').val('');
+              expire_passphrase();
               refresh_passphrase_status();
               display_flash("Passphrase remembered for the next " + howlong + " minutes.", "positive");
             }

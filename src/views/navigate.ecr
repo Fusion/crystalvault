@@ -1,19 +1,29 @@
 <table class="ui celled striped table">
   <thead>
     <tr><th colspan="3">
-      <%= location %>
+      <%= display_location %>
     </th>
   </tr></thead>
   <tbody>
+<% dirs.each do |dir| %>
+  <tr>
+    <td class="collapsing">
+      <i class="folder outline icon"></i> <%= dir[1] %>
+    </td>
+    <td class="right aligned">
+      <a href='/navigate/<%= whoami %>/<%= dir[0] %>'>open</a>
+    </td>
+  </tr>
+<% end %>
 <% files.each do |file| %>
   <tr>
     <td class="collapsing">
-      <i class="file outline icon"></i> <%= file %>
+      <i class="file outline icon"></i> <%= file[1] %>
     </td>
     <td class="right aligned">
-      <a href='/viewfile/<%= whoami %>/<%= file %>'>view</a>
+      <a href='/viewfile/<%= whoami %>/<%= file[0] %>'>view</a>
       &nbsp;|&nbsp;
-      <a href='/getfile/<%= whoami %>/<%= file %>'>download</a>
+      <a href='/getfile/<%= whoami %>/<%= file[0] %>'>download</a>
     </td>
   </tr>
 <% end %>
@@ -24,7 +34,7 @@
 <script>
 $(function() {
   $('#newsecret').click(function(e) {
-    window.location.replace("/newsecret");
+    window.location.replace("/newsecret/<%= whoami %>/<%= location %>");
   });
 });
 </script>

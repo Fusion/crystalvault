@@ -3,6 +3,8 @@ require "logger"
 require "kemal"
 require "./config.cr"
 
+DEBUG=true
+
 class Auditor
   INSTANCE = new
 
@@ -45,7 +47,18 @@ macro audit(txt)
   Auditor.instance.info("[" + remote_ip + "] " + entity + ": " + {{txt}})
 end
 
+# Returns [ full, web (partial) ]
+def sanitized_path(path)
+  valid_root = File.expand_path CONFIG["data_root"]
+  this_path  = File.expand_path File.join CONFIG["data_root"], unescape_param path
+  return ["", ""] unless this_path.starts_with? valid_root
+  [this_path, this_path.gsub(valid_root, "")]
+end
+
 def prepare(env)
+  if DEBUG
+    return true
+  end
   if env.session["identity"]?.is_a?(Nil)
     return false
   end
@@ -59,22 +72,43 @@ end
 def navigate(location, whoami)
   # read directory content, based on current user
   # TODO if file contains '::' its name will be truncated...oops
-  files = (Dir.glob CONFIG["data_root"] + "/*::" + URI.unescape whoami).map { |x| File.basename x.split(/::/)[0] }
+  full, partial = sanitized_path location
+  return if full == ""
+  partial = partial[1..-1] if partial.starts_with?('/')
+  current = partial == "" ? "" : URI.escape(partial) + "%2F"
+  display_location = URI.unescape location
+  files = (Dir.glob full + "/*::" + URI.unescape whoami).map { |x| File.basename x.split(/::/)[0] }.map { |x| { current + x, x } }
+  # ".." => holy string parsing batman.
+  dirs  = (Dir.entries (full as String)).reject { |x| x == "." || (x == ".." && partial == "" || File.basename(x).includes?("::")) }.map { |x|
+    x == ".." ? {current.split("%2F")[0..-3].join("%2F"), x} : {current + x, x}
+  }
 
   render "src/views/navigate.ecr", "src/views/layout.ecr"
 end
 
+def newsecret(location, whoami)
+  display_location = URI.unescape location
+  keys = listkeys
+  render "src/views/newsecret.ecr", "src/views/layout.ecr"
+end
+
 def viewfile(file, whoami)
+  location = file.split("%2F")[0..-2].join("%2F")
+  display_location = URI.unescape location
   identity = whoami
   file_name = file
 
+puts "VIEWING #{display_location}"
   render "src/views/viewsecret.ecr", "src/views/layout.ecr"
 end
 
 def getfile(file, whoami)
+  location = file.split("/")[0..-2].join("/")
+  display_location = URI.unescape location
   identity = whoami
   file_name = file
 
+puts "GETTING #{display_location}"
   render "src/views/getsecret.ecr", "src/views/layout.ecr"
 end
 
@@ -113,26 +147,28 @@ def getkey(identity)
   File.read File.join(CONFIG["keys_root"], identity)
 end
 
-def pushfile(recipient, name, content)
-  if recipient.includes?('/') || name.includes?('/')
+def pushfile(recipient, location, name, content)
+  full, partial = sanitized_path File.join(location, name)
+  return if full == ""
+  if recipient.includes?('/')
     # F* it...for now
   else
-    file_name = name + "::" + recipient
-    File.write File.join(CONFIG["data_root"], file_name), content
+    file_name = full + "::" + recipient
+    File.write file_name, content
   end
 end
 
 def pullfile(recipient, name)
-  if recipient.includes?('/') || name.includes?('/')
+  full, partial = sanitized_path name
+  return if full == ""
+  if recipient.includes?('/')
   else
-    file_name = name + "::" + recipient
-    File.read File.join(CONFIG["data_root"], file_name)
+    file_name = full + "::" + recipient
+    File.read file_name
   end
 end
 
 get "/" do |env|
-  audit "hello"
-  audit "there"
   render "src/views/index.ecr", "src/views/layout.ecr"
 end
 
@@ -164,10 +200,17 @@ get "/navigate/:whoami/:location" do |env|
   end
 end
 
-get "/newsecret" do |env|
+get "/newsecret/:whoami" do |env|
   if prepare(env)
-    keys = listkeys
-    render "src/views/newsecret.ecr", "src/views/layout.ecr"
+    newsecret "/", env.params.url["whoami"]
+  else
+    enterpassphrase
+  end
+end
+
+get "/newsecret/:whoami/:location" do |env|
+  if prepare(env)
+    newsecret env.params.url["location"], env.params.url["whoami"]
   else
     enterpassphrase
   end
@@ -214,7 +257,7 @@ end
 post "/pushfile.json" do |env|
   if prepare(env)
     audit "Pushes file: " + body_param("name")
-    pushfile body_param("recipient"), body_param("name"), body_param("content")
+    pushfile body_param("recipient"), body_param("location"), body_param("name"), body_param("content")
   end
 end
 
@@ -223,6 +266,13 @@ post "/pullfile.json" do |env|
     audit "Pulls file: " + body_param("name")
     pullfile body_param("recipient"), body_param("name")
   end
+end
+
+get "/test.json" do |env|
+  sanitized_path ""
+end
+get "/test.json/:path" do |env|
+  sanitized_path env.params.url["path"]
 end
 
 Kemal.run
