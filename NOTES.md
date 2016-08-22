@@ -5,5 +5,9 @@
 
 # TODO
 
+* Folder creation
+* More explicit buttons
+
+# DONE
+
 * Navigation
-* Add breadcrumbs, including when downloading/viewing
