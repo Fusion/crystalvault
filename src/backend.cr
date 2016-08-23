@@ -3,7 +3,7 @@ require "logger"
 require "kemal"
 require "./config.cr"
 
-DEBUG=true
+DEBUG=false
 
 class Auditor
   INSTANCE = new
