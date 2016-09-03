@@ -72,7 +72,7 @@ You will then be able to browse the vault at http://container-ip:3000 (or whatev
     Please visit [Goals, Security, FAQ](public/content/design_content.txt) to learn more about
  the security measures taken to protect the pass phrase.
 
-![enterpassphrase](public/content/enterpassphrase.jpg)
+![enterpassphrase](https://raw.githubusercontent.com/Fusion/crystalvault/master/public/content/enterpassphrase.jpg)
 
 <p></p>
 
@@ -84,14 +84,14 @@ You will then be able to browse the vault at http://container-ip:3000 (or whatev
  [Goals, Security, FAQ](public/content/design_content.txt) for more information.
 
 
-![dropprivatekey](public/content/dropprivatekey.jpg)
+![dropprivatekey](https://raw.githubusercontent.com/Fusion/crystalvault/master/public/content/dropprivatekey.jpg)
 
 <p></p>
 
 * They can now click the folder icon and start creating new secrets and retrieving
  the secrets they are allowed to read.
 
-![navigate](public/content/navigate.jpg)
+![navigate](https://raw.githubusercontent.com/Fusion/crystalvault/master/public/content/navigate.jpg)
 
 ## Contributing
 
