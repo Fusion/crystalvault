@@ -5,9 +5,9 @@
 
 # TODO
 
-* Folder creation
 * More explicit buttons
 
 # DONE
 
 * Navigation
+* Folder creation
