@@ -6,6 +6,7 @@
 * Manual Setup (option #1)
 * Docker Setup (option #2)
 * Usage
+* Credits
 * Contributing
 
 ## Rationale and Security
@@ -92,6 +93,12 @@ You will then be able to browse the vault at http://container-ip:3000 (or whatev
  the secrets they are allowed to read.
 
 ![navigate](https://raw.githubusercontent.com/Fusion/crystalvault/master/public/content/navigate.jpg)
+
+## Credits
+
+* [Keybase's TripleSec](https://keybase.io/triplesec)
+* [Keybase's kbpgp.js](https://keybase.io/kbpgp)
+* [The Vault-Tec icon](https://commons.wikimedia.org/wiki/File:Vault-Tec_Corporation_logo.svg)
 
 ## Contributing
 
