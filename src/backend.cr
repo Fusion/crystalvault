@@ -23,11 +23,11 @@ class Auditor
 end
 
 macro unescape_param(name)
-  URI.unescape({{name}} as String, true)
+  URI.unescape({{name}}.as(String), true)
 end
 
 macro body_param(name)
-  URI.unescape(env.params.body[{{name}}] as String, true)
+  URI.unescape(env.params.body[{{name}}].as(String), true)
 end
 
 macro reply_json(data, diag = 200)
@@ -79,7 +79,7 @@ def navigate(location, whoami)
   display_location = URI.unescape location
   files = (Dir.glob full + "/*::" + URI.unescape whoami).map { |x| File.basename x.split(/::/)[0] }.map { |x| { current + x, x } }
   # ".." => holy string parsing batman.
-  dirs  = (Dir.entries (full as String)).reject { |x| x == "." || (x == ".." && partial == "" || File.basename(x).includes?("::")) }.map { |x|
+  dirs  = (Dir.entries (full.as(String))).reject { |x| x == "." || (x == ".." && partial == "" || File.basename(x).includes?("::")) }.map { |x|
     x == ".." ? {current.split("%2F")[0..-3].join("%2F"), x} : {current + x, x}
   }
 
