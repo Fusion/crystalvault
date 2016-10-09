@@ -40,7 +40,7 @@ end
 macro audit(txt)
   remote_ip = "IP"
   if env.session["identity"]?
-    entity = env.session["identity"]
+    entity = env.session["identity"].to_s()
   else
     entity = "unknown"
   end
