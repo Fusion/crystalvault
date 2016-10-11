@@ -36,7 +36,7 @@ RUN tar zxf /tmp/s6-overlay-amd64.tar.gz -C / && \
     echo "deb http://dist.crystal-lang.org/apt crystal main" > /etc/apt/sources.list.d/crystal.list && \
     apt-get update && \
     apt-get install -y git pkg-config libssl-dev build-essential && \
-    apt-get install -y crystal && \
+    apt-get install -y crystal=0.19.4-1 && \
     \
     mkdir /var/www && \
     cd /var/www && \
