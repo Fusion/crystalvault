@@ -77,11 +77,13 @@ def navigate(location, whoami)
   partial = partial[1..-1] if partial.starts_with?('/')
   current = partial == "" ? "" : URI.escape(partial) + "%2F"
   display_location = URI.unescape location
-  files = (Dir.glob full + "/*::" + URI.unescape whoami).map { |x| File.basename x.split(/::/)[0] }.map { |x| { current + x, x } }
+  files = (Dir.glob full + "/*::" + URI.unescape whoami).map { |x| File.basename x.split(/::/)[0] }.map { |x| { current + x, x }
+  }.sort
   # ".." => holy string parsing batman.
-  dirs  = (Dir.entries (full.as(String))).reject { |x| x == "." || (x == ".." && partial == "" || File.basename(x).includes?("::")) }.map { |x|
+  dirs  = (Dir.entries (full.as(String))).reject { |x| x == "." || (x == ".." && partial == "" || File.basename(x).includes?("::"))
+  }.map { |x|
     x == ".." ? {current.split("%2F")[0..-3].join("%2F"), x} : {current + x, x}
-  }
+  }.sort
 
   render "src/views/navigate.ecr", "src/views/layout.ecr"
 end
