@@ -93,12 +93,11 @@ def newsecret(location, whoami)
 end
 
 def viewfile(file, whoami)
-  location = file.split("%2F")[0..-2].join("%2F")
+  location = file.split("/")[0..-2].join("%2F")
   display_location = URI.unescape location
   identity = whoami
   file_name = file
 
-puts "VIEWING #{display_location}"
   render "src/views/viewsecret.ecr", "src/views/layout.ecr"
 end
 
