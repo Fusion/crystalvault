@@ -30,6 +30,12 @@ macro body_param(name)
   URI.unescape(env.params.body[{{name}}].as(String), true)
 end
 
+# Not sure if Crystal or Kemal but someone decided to change
+# path encoding between releases...
+macro re_escape_path(name)
+  {{name}}.gsub("/", "%2F")
+end
+
 macro reply_json(data, diag = 200)
   env.response.content_type = "application/json"
   env.response.status_code = {{diag}}
@@ -76,6 +82,7 @@ def navigate(location, whoami)
   return if full == ""
   partial = partial[1..-1] if partial.starts_with?('/')
   current = partial == "" ? "" : URI.escape(partial) + "%2F"
+  puts "Location [#{location}] Sanitized [#{partial}] Current [#{current}]"
   display_location = URI.unescape location
   files = (Dir.glob full + "/*::" + URI.unescape whoami).map { |x| File.basename x.split(/::/)[0] }.map { |x| { current + x, x }
   }.sort
@@ -111,6 +118,11 @@ def getfile(file, whoami)
 
 puts "GETTING #{display_location}"
   render "src/views/getsecret.ecr", "src/views/layout.ecr"
+end
+
+def newfolder(location, whoami)
+  display_location = URI.unescape location
+  render "src/views/newfolder.ecr", "src/views/layout.ecr"
 end
 
 def listkeys
@@ -195,7 +207,7 @@ end
 
 get "/navigate/:whoami/:location" do |env|
   if prepare(env)
-    navigate env.params.url["location"], env.params.url["whoami"]
+    navigate re_escape_path(env.params.url["location"]), env.params.url["whoami"]
   else
     enterpassphrase
   end
@@ -211,7 +223,7 @@ end
 
 get "/newsecret/:whoami/:location" do |env|
   if prepare(env)
-    newsecret env.params.url["location"], env.params.url["whoami"]
+    newsecret re_escape_path(env.params.url["location"]), env.params.url["whoami"]
   else
     enterpassphrase
   end
@@ -228,6 +240,14 @@ end
 get "/getfile/:whoami/:file" do |env|
   if prepare(env)
      getfile unescape_param(env.params.url["file"]), unescape_param(env.params.url["whoami"])
+  else
+    enterpassphrase
+  end
+end
+
+get "/newfolder/:whoami/:location" do |env|
+  if prepare(env)
+    newfolder re_escape_path(env.params.url["location"]), env.params.url["whoami"]
   else
     enterpassphrase
   end

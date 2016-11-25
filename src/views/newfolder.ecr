@@ -1,0 +1,60 @@
+<div class="ui middle aligned center aligned">
+<p>
+<div class="ui inline field">
+  <button id="backbutton" class="ui small icon button">
+    <i class="left chevron icon"></i>
+  </button>
+  <%= display_location %>
+</div>
+</p>
+
+<div class="ui middle aligned center aligned">
+  <form id="ppform" class="ui fluid form">
+    <div class="inline field">
+    <input type="text" id="foldername" placeholder="Folder Name" />
+    <div class="ui left pointing label">
+    Enter the name of the folder you are going to create.
+    </div>
+    </div>
+    <div class="field">
+    <button class="ui button" id="submitter">Create</button> <span id="reveal" class="discreet-action"></span>
+    </div>
+    <div id="flash"></div>
+  </form>
+</div>
+
+</div>
+<script>
+$(function() {
+  $('#backbutton').click(function(e) {
+    window.location.replace("/navigate/<%= whoami %>/<%= location %>");
+  });
+
+  $('#ppform').submit(function(e) {
+    e.preventDefault();
+
+    var foldername = $('#foldername').val();
+    if(foldername.length == 0) {
+      alert("Please enter a folder name");
+    }
+    else {
+
+      $.ajax({
+        type: "POST",
+        url: "/newfolder.json",
+        data: { foldername: foldername },
+        success: function(diag) {
+
+          if(diag.diag) {
+            display_flash("Folder created.");
+          }
+          else {
+            display_flash("Unable to create folder.", "error");
+          }
+        }
+      });
+
+    }
+  });
+});
+</script>
