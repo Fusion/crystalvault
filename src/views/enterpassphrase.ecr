@@ -113,16 +113,19 @@ $(function() {
             if(diag.diag) {
               var data = {identity: identity, passphrase: passphrase, ts: new Date().getTime() + (howlong * 60 * 1000)}
               localStorage.setItem("vaultpassphrase", JSON.stringify(data));
-              $('#email').val('');
-              $('#passphrase').val('');
               expire_passphrase();
               refresh_passphrase_status();
+              $.each(['#email', '#password', '#passphrase'], function(idx, field) {
+                $(field).val('');
+              });
+              $(howlong).val('15');
               display_flash("Passphrase remembered for the next " + howlong + " minutes.", "positive");
             }
             else {
               localStorage.removeItem("vaultpassphrase");
               display_flash("Unable to log you in.", "error");
             }
+            $('#email').focus();
           }
         });
 

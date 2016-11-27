@@ -42,15 +42,17 @@ $(function() {
       $.ajax({
         type: "POST",
         url: "/newfolder.json",
-        data: { foldername: foldername },
+        data: { location: '<%= location %>', foldername: foldername },
         success: function(diag) {
 
           if(diag.diag) {
-            display_flash("Folder created.");
+            $('#foldername').val('');
+            display_flash("Folder '" + foldername + "' created.", "positive");
           }
           else {
-            display_flash("Unable to create folder.", "error");
+            display_flash("Unable to create folder '" + foldername + "'", "error");
           }
+          $('#foldername').focus();
         }
       });
 

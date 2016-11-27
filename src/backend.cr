@@ -82,13 +82,13 @@ def navigate(location, whoami)
   return if full == ""
   partial = partial[1..-1] if partial.starts_with?('/')
   current = partial == "" ? "" : URI.escape(partial) + "%2F"
-  puts "Location [#{location}] Sanitized [#{partial}] Current [#{current}]"
   display_location = URI.unescape location
   files = (Dir.glob full + "/*::" + URI.unescape whoami).map { |x| File.basename x.split(/::/)[0] }.map { |x| { current + x, x }
   }.sort
   # ".." => holy string parsing batman.
   dirs  = (Dir.entries (full.as(String))).reject { |x| x == "." || (x == ".." && partial == "" || File.basename(x).includes?("::"))
   }.map { |x|
+p current.split("%2F") if x == ".."
     x == ".." ? {current.split("%2F")[0..-3].join("%2F"), x} : {current + x, x}
   }.sort
 
@@ -116,7 +116,6 @@ def getfile(file, whoami)
   identity = whoami
   file_name = file
 
-puts "GETTING #{display_location}"
   render "src/views/getsecret.ecr", "src/views/layout.ecr"
 end
 
@@ -179,6 +178,13 @@ def pullfile(recipient, name)
     file_name = full + "::" + recipient
     File.read file_name
   end
+end
+
+def createnewfolder(env, location, name)
+  full, partial = sanitized_path File.join(location, name)
+  return reply_json({diag: false}) if full == ""
+  Dir.mkdir full
+  reply_json({diag: true})
 end
 
 get "/" do |env|
@@ -245,6 +251,14 @@ get "/getfile/:whoami/:file" do |env|
   end
 end
 
+get "/newfolder/:whoami" do |env|
+  if prepare(env)
+    newfolder "/", env.params.url["whoami"]
+  else
+    enterpassphrase
+  end
+end
+
 get "/newfolder/:whoami/:location" do |env|
   if prepare(env)
     newfolder re_escape_path(env.params.url["location"]), env.params.url["whoami"]
@@ -286,6 +300,13 @@ post "/pullfile.json" do |env|
   if prepare(env)
     audit "Pulls file: " + body_param("name")
     pullfile body_param("recipient"), body_param("name")
+  end
+end
+
+post "/newfolder.json" do |env|
+  if prepare(env)
+    audit "Creates folder: " + body_param("foldername")
+    createnewfolder env, body_param("location"), body_param("foldername")
   end
 end
 
