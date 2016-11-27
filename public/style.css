@@ -1,5 +1,21 @@
 body {
   background-color: #FFFFFF;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+footer {
+  background: #EDEFF1;
+  height: auto;
+  position: relative;
+  width: 100%;
+  border-bottom: 1px solid #CCCCCC;
+  border-top: 1px solid #DDDDDD;
 }
 
 .ok {
